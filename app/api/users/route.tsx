@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import schema from "./schema";
 import { prisma } from "@/prisma/client";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const users = await prisma.user.findMany();
 
   return NextResponse.json(users);
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   const newUser = await prisma.user.create({
     data: {
-      name: body.name,
+      username: body.username,
       email: body.email,
       password: body.password, // Make sure to hash this in production
     },

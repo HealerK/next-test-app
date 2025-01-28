@@ -3,25 +3,20 @@ import Link from "next/link";
 import { sort } from "fast-sort";
 import { prisma } from "@/prisma/client";
 
-interface User {
-  id: string;
-  name: string | null;
-  email: string | null;
-}
-
-interface Props {
-  sortOrder?: string;
-}
-
-const UserTable = async ({ sortOrder }: Props) => {
+const UserTable = async ({
+  params,
+}: {
+  params: Promise<{ sortOrder?: string }>;
+}) => {
   const users = await prisma.user.findMany();
+  const sortOrder = (await params).sortOrder;
 
   const sortedUsers = sort(users).asc(
     sortOrder === "name"
-      ? (user) => user.name || ""
+      ? (user) => user.username || ""
       : sortOrder === "email"
-      ? (user) => user.email || ""
-      : (user) => user.name || ""
+        ? (user) => user.email || ""
+        : (user) => user.name || ""
   );
 
   return (
@@ -29,10 +24,7 @@ const UserTable = async ({ sortOrder }: Props) => {
       <thead>
         <tr>
           <th>
-            <Link href="/users?sortOrder=firstName">First Name</Link>
-          </th>
-          <th>
-            <Link href="/users?sortOrder=lastName">Last Name</Link>
+            <Link href="/users?sortOrder=username">UserName</Link>
           </th>
           <th>
             <Link href="/users?sortOrder=email">Email</Link>

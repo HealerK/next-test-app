@@ -1,27 +1,40 @@
+// app/api/users/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import schema from "../schema";
 import { prisma } from "@/prisma/client";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // ✅ Keep as Promise
 ) {
-  const userId = parseInt(params.id);
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-  if (!user) {
-    return NextResponse.json({ error: "User not found!" }, { status: 404 });
-  }
+  try {
+    // ✅ Properly await the params Promise
+    const { id } = await params;
 
-  return NextResponse.json(user);
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    return user
+      ? NextResponse.json(user)
+      : NextResponse.json({ error: "User not found" }, { status: 404 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // Ensure params is a Promise
 ) {
   const body = await request.json();
+  const { id } = await params; // Await the params to access id
+
+  // Assume schema is defined for validation
   const validation = schema.safeParse(body);
 
   if (!validation.success) {
@@ -29,17 +42,17 @@ export async function PUT(
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: parseInt(params.id) },
+    where: { id },
   });
 
   if (!user) {
     return NextResponse.json({ error: "User not found!" }, { status: 404 });
   }
+
   const updateUser = await prisma.user.update({
-    where: { id: user.id },
+    where: { id },
     data: {
-      firstname: body.firstname,
-      lastname: body.lastname,
+      username: body.username,
       email: body.email,
     },
   });
@@ -49,17 +62,21 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // Ensure params is a Promise
 ) {
+  const { id } = await params; // Await the params to access id
+
   const user = await prisma.user.findUnique({
-    where: { id: parseInt(params.id) },
+    where: { id },
   });
+
   if (!user) {
     return NextResponse.json({ error: "User not found!" }, { status: 404 });
   }
 
   await prisma.user.delete({
-    where: { id: user.id },
+    where: { id },
   });
+
   return NextResponse.json({});
 }

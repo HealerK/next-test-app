@@ -25,7 +25,7 @@ const UploadPage = () => {
           multiple: false,
           maxFiles: 5,
         }}
-        onSuccess={(result, widget) => {
+        onSuccess={(result) => {
           if (result.event !== "success") return;
           const info = result.info as CloudinaryResult;
           setPublicId(info.public_id);

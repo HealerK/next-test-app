@@ -1,15 +1,18 @@
+"use client";
+
 import React from "react";
 
-interface Props {
-  params: { id: number; photoId: number };
-}
-
-const PhotDetail = ({ params: { id, photoId } }: Props) => {
+export default async function UserDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string; photoId: string }>;
+}) {
+  const id = (await params).id;
+  const photoId = (await params).photoId;
   return (
     <div>
-      PhotDetail {id} {photoId}
+      {" "}
+      PhotDetail: {id} {photoId}
     </div>
   );
-};
-
-export default PhotDetail;
+}
